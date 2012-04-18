@@ -16,14 +16,16 @@ public class KendallCorrelate{
 	double coefficient[] = null;
 	double pvalue[] = null;
 	String attrName[] = null;
+	String filePath = "";
 	
-	public KendallCorrelate(Instances data){
+	public KendallCorrelate(Instances data, String filepath){
 		m_classIndex = data.classIndex();
 		num_attribute = data.numAttributes()-1;
 		num_instance = data.numInstances();
 		coefficient = new double[num_attribute];
 		pvalue = new double[num_attribute];
 		attrName = new String[num_attribute];
+		this.filePath = filepath;
 	}
 	
 	public void calculateCoefficientWithClass(Instances data) throws Exception{
@@ -66,12 +68,12 @@ public class KendallCorrelate{
 		  str+=x[i]+","+y[i]+"\n";
 	  }
 	  str+=x[x.length-1]+","+y[x.length-1];
-	  FileWriter fa=new FileWriter("/home/xyzhu/change-prediction/predict/Correlation/corr.csv",false);
+	  FileWriter fa=new FileWriter(filePath+"Correlation/corr.csv",false);
 	  BufferedWriter ba = new BufferedWriter(fa);
 	  ba.write(str);
 	  ba.flush();
 	  ba.close();
-	  Process p = Runtime.getRuntime().exec("Rscript /home/xyzhu/change-prediction/predict/Correlation/test.R /home/xyzhu/change-prediction/predict/Correlation/corr.csv a b");
+	  Process p = Runtime.getRuntime().exec("Rscript "+filePath+"Correlation/test.R "+filePath+"Correlation/corr.csv a b");
 	  
       BufferedInputStream buf=new BufferedInputStream(p.getInputStream());
       Scanner s=new Scanner(buf);  

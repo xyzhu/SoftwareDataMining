@@ -11,18 +11,19 @@ import weka.core.Instances;
 
 public class Util {
 	
-	public void outputSelectedAttributes(Instances data) {
+	public void outputSelectedAttributes(Instances data, String outputFilePath,
+			String projectName) throws IOException {
 		int num_attr = data.numAttributes();
-		String attr;
+		String attr = projectName+",";
 		for(int i=0;i<num_attr;i++)
 		{
-			attr = data.attribute(i).name();
-			System.out.print(attr+",");			
+			attr +=data.attribute(i).name()+ ",";	
 		}
-		System.out.println();
+		attr += "\n";
+		appendResult(attr,outputFilePath+"AttributeSelection/sel_attr.txt");
 	}
 
-	public void saveClassificationResult(Evaluation eval,String outputFile,String projectName,
+	public void saveClassificationResult(Evaluation eval,String outputFilePath,String type, int seperator,String projectName,
 			String history,String deletemethod) throws IOException {
 		String predictResult = "";
 		if(projectName.equals("ant")){
@@ -35,33 +36,37 @@ public class Util {
 				+ format.format(eval.areaUnderROC(0))+", "
 				+ format.format(eval.truePositiveRate(0))+", "
 				+ format.format(eval.truePositiveRate(1))+"\n";
-		
-		FileWriter fa=new FileWriter(outputFile+".txt",true);
-		BufferedWriter ba = new BufferedWriter(fa);
-		ba.write(predictResult);
-		ba.flush();
-		ba.close();
+		String outputFile = outputFilePath+"Classification/"+type+"_"+String.valueOf(seperator)+".txt";
+		appendResult(predictResult,outputFile);
 		
 	}
 
 	public void outputCoefficient(Instances data, String outputFilePath, String projectName)
 			throws Exception {
 		String corrResult = "";
-		KendallCorrelate kendall = new KendallCorrelate(data);
+		KendallCorrelate kendall = new KendallCorrelate(data, outputFilePath);
 		kendall.calculateCoefficientWithClass(data);
 		String []attrName = kendall.getAttributeName();
 		double []corrs = kendall.getCoefficient();
 		double []pvalue = kendall.getPvalue();
 		int m_attr = corrs.length;
 		for(int i=0;i<m_attr;i++){
-			corrResult += attrName+","+String.valueOf(corrs[i])+","+pvalue[i]+"\n";
+			corrResult += attrName[i]+","+String.valueOf(corrs[i])+","+pvalue[i]+"\n";
 		}
 		Util util = new Util();
-		util.saveResult(corrResult,outputFilePath+"Correlation/"+projectName);
+		util.saveResult(corrResult,outputFilePath+"Correlation/"+projectName+".txt");
 	}
 	
 	public void saveResult(String result, String file) throws IOException{
-		FileWriter fa=new FileWriter(file, false);
+		FileWriter fw=new FileWriter(file, false);
+		BufferedWriter bw = new BufferedWriter(fw);
+		bw.write(result);
+		bw.flush();
+		bw.close();
+	}
+	
+	public void appendResult(String result, String file) throws IOException{
+		FileWriter fa=new FileWriter(file, true);
 		BufferedWriter ba = new BufferedWriter(fa);
 		ba.write(result);
 		ba.flush();
