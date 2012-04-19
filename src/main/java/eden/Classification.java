@@ -7,12 +7,13 @@ import java.util.Random;
 import weka.classifiers.Evaluation;
 import weka.classifiers.meta.Bagging;
 import weka.classifiers.trees.J48;
+import weka.core.FastVector;
 import weka.core.Instances;
 
 public class Classification {
 
 	public Evaluation StartClassification(Instances data) throws Exception {
-		int randomSeed = 1;
+		int randomSeed = 0;
 		Bagging classifier = new Bagging();
 		classifier.setClassifier(new J48());
 		Evaluation evaluation = new Evaluation(data);
@@ -25,28 +26,30 @@ public class Classification {
 	
 	public void getSpecificClassficationResult(Instances data,String outputFilePath,
 			String projectName,String deletemethod) throws Exception{
-		int pass = 1;
+		int pass = 10;
 		int randomSeed = 0;
 		Bagging classifier = new Bagging();
 		classifier.setClassifier(new J48());
 		MyEvaluation evaluation = new MyEvaluation(data);
-		double tenfoldResult[] = new double[10];
-		double specificResult[] = new double[pass*10];
-		for (int i = 1; i <= pass; i++) {
+		FastVector result = new FastVector();
+		FastVector finalresult = new FastVector();
+		for (int i = 0; i < pass; i++) {
 			randomSeed = i;
 			Random rand = new Random(randomSeed);	
 			evaluation.crossValidateModel(classifier, data, 10, rand);
-			tenfoldResult = evaluation.getTenfoldResult();
-			for(int j=0;j<10;j++){
-				specificResult[(i-1)*10+j] = tenfoldResult[j];
+			result = evaluation.getCrossValidateResult();
+			for(int j=0;j<result.size();j++){
+				finalresult.addElement(result.elementAt(j));
 			}
 		}
 		
-		DecimalFormat format = (DecimalFormat) NumberFormat.getInstance();
-		format.applyPattern("0.00");
-		String result = deletemethod+"\n";
-		for(int m=0;m<10*pass;m++){
-			result += String.valueOf(format.format(specificResult[m]))+"\n";
+		String str_result = "accuracy,auc,recall1,recall2\n";
+		int size = finalresult.size();
+		ClassificationResult cr = new ClassificationResult();
+		for(int m=0;m<size;m++){
+			cr = (ClassificationResult)(finalresult.elementAt(m));
+			str_result += doubleformat(cr.accuracy)+","+doubleformat(cr.auc)+
+					","+doubleformat(cr.recall1)+","+doubleformat(cr.recall2)+"\n";
 		}
 		String attrSet = "";
 		if(deletemethod.contains("rank,statement")){
@@ -58,8 +61,16 @@ public class Classification {
 		else if(deletemethod.contains("statement")){
 			attrSet = "3";
 		}
-			
+		else if(deletemethod.contains("oldchange,understand")){
+			attrSet = "4";
+;		}
 		Util util = new Util();
-		util.saveResult(result, outputFilePath+"AttributeValidation/"+projectName+attrSet+".txt");
+		util.saveResult(str_result, outputFilePath+"AttributeValidation/"+projectName+attrSet+".csv");
+	}
+	public String doubleformat(double d){
+		DecimalFormat format = (DecimalFormat) NumberFormat.getInstance();
+		format.applyPattern("0.00");
+		String s = String.valueOf(format.format(d));
+		return s;
 	}
 }

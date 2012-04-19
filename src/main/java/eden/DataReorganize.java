@@ -12,13 +12,15 @@ import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instances;
 import weka.core.SelectedTag;
-import weka.core.converters.ArffLoader;
 import weka.core.converters.CSVLoader;
 
 
 public class DataReorganize {
 	Instances data;
 
+	/*
+	 * change class value from number to a or b by seperator
+	 */
 	public void resetClassValue(int seperator){
 
 		data.deleteAttributeAt(0);
@@ -43,10 +45,38 @@ public class DataReorganize {
 		}
 		data.setClassIndex(num_attributes);
 	}
+	/*
+	 * change class value from number to a or b by percentage
+	 */
+	public void resetClassValue() {
+		data.deleteAttributeAt(0);
+		data.deleteAttributeAt(0);
+		data.setClassIndex(-1);	
+		int num_instances = data.numInstances();	
+		double classValue[] = data.attributeToDoubleArray(0);
+		Arrays.sort(classValue);
+		double seperator = classValue[(int) (num_instances*0.8)];
+		data.deleteAttributeAt(0);
+		int num_attributes = data.numAttributes();
+		FastVector a = new FastVector(2);
+		a.addElement("a");
+		a.addElement("b");
+		Attribute attr = new Attribute("Change",a);
+		data.insertAttributeAt(attr, num_attributes);
+		for(int i=0;i<num_instances;i++){
+			if(classValue[i]<seperator){
+				data.instance(i).setValue(num_attributes, "a");
+			}
+			else{
+				data.instance(i).setValue(num_attributes,"b");
+			}
+		}
+		data.setClassIndex(num_attributes);
+	}
 
 	public void deleteAttribute(String method) throws Exception {
 		if(method.contains("understand")){
-			for(int i=80;i>=44;i--){
+			for(int i=77;i>=41;i--){
 				data.deleteAttributeAt(i);
 			}
 		}
@@ -60,7 +90,7 @@ public class DataReorganize {
 				data.deleteAttributeAt(i);
 			}
 		}
-		if(method.contains("preciouschange")){
+		if(method.contains("oldchange")){
 			for(int i=6;i>=0;i--){
 				data.deleteAttributeAt(i);
 			}
@@ -111,47 +141,23 @@ public class DataReorganize {
 		}
 	}
 
-	public void resetClassValue() {
-		data.deleteAttributeAt(0);
-		data.deleteAttributeAt(0);
-		data.setClassIndex(-1);	
-		int num_instances = data.numInstances();	
-		double classValue[] = data.attributeToDoubleArray(0);
-		Arrays.sort(classValue);
-		double seperator = classValue[(int) (num_instances*0.8)];
-		data.deleteAttributeAt(0);
-		int num_attributes = data.numAttributes();
-		FastVector a = new FastVector(2);
-		a.addElement("a");
-		a.addElement("b");
-		Attribute attr = new Attribute("Change",a);
-		data.insertAttributeAt(attr, num_attributes);
-		for(int i=0;i<num_instances;i++){
-			if(classValue[i]<seperator){
-				data.instance(i).setValue(num_attributes, "a");
-			}
-			else{
-				data.instance(i).setValue(num_attributes,"b");
-			}
-		}
-		data.setClassIndex(num_attributes);
-	}
-
 	public Instances generateArffFile(String filepath, String history,
 			String project, String type, Integer seperator, String deletemethod) throws Exception {
 		String inputfile = filepath+history+"/"+project+"_"+type+".csv";
 		data = readCsvFile(inputfile);
-		resetClassValue();
+		resetClassValue(seperator);
 		deleteAttribute(deletemethod);
-		deleteHighRelated(filepath);
+		if(!deletemethod.contains("understand")){
+			deleteHighRelated(filepath);
+		}
 		selectAttribute(deletemethod);
 		Util util = new Util();
 		if(deletemethod.equals("high-related")){
 			String outputfile = filepath+history+"/"+project+"_"+type+".arff";
 			util.saveResult(data.toString(), outputfile);
 		}
-//		String outputfile = filepath+history+"/"+project+"_"+type+".arff";
-//		util.saveResult(data.toString(), outputfile);
+		//		String outputfile = filepath+history+"/"+project+"_"+type+".arff";
+		//		util.saveResult(data.toString(), outputfile);
 		return data;
 
 	}
@@ -162,16 +168,6 @@ public class DataReorganize {
 		CSVLoader csvLoader = new CSVLoader();
 		csvLoader.setSource(file);
 		Instances data = csvLoader.getDataSet();
-		return data;
-	}
-
-	public Instances readArffFile(String filepath, String history,
-			String project, String type, Integer seperator) throws IOException {
-		String inputfile = filepath+history+"/"+project+"_"+type+".arff";
-		File file = new File(inputfile);
-		ArffLoader arffLoader = new ArffLoader();
-		arffLoader.setSource(file);
-		Instances data = arffLoader.getDataSet();
 		return data;
 	}
 

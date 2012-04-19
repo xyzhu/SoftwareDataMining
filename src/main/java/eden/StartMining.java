@@ -15,7 +15,7 @@ public class StartMining {
 		CmdLineParser.Option project_opt = cmdparser.addStringOption('p', "project");
 		CmdLineParser.Option type_opt = cmdparser.addStringOption('t', "type");
 		CmdLineParser.Option seperator_opt = cmdparser.addIntegerOption('s', "seperator");
-		CmdLineParser.Option csv_opt = cmdparser.addBooleanOption('c', "readcsv");
+		CmdLineParser.Option delete_opt = cmdparser.addStringOption('d',"deletemethod");
 		try {
 			cmdparser.parse(argv);
 		} catch (CmdLineParser.OptionException e) {
@@ -29,24 +29,19 @@ public class StartMining {
 		String project = (String) cmdparser.getOptionValue(project_opt, "ant");
 		String type = (String) cmdparser.getOptionValue(type_opt, "line");
 		Integer seperator = (Integer) cmdparser.getOptionValue(seperator_opt, 5);
-		Boolean readcsv = (Boolean) cmdparser.getOptionValue(csv_opt, true);
+		String deletemethod = (String) cmdparser.getOptionValue(delete_opt, "high-related");
 		
 		DataReorganize organizer = new DataReorganize();
 		Instances data = null;
-		String deletemethod = "high-related";
-		if(readcsv){
-			data = organizer.generateArffFile(filepath, history, project, type, seperator,deletemethod);
-		}
-		else{
-			data = organizer.readArffFile(filepath,history,project,type,seperator);
-		}
+		data = organizer.generateArffFile(filepath, history, project, type, seperator,deletemethod);
+		
 		Util util = new Util();
-//		util.outputCoefficient(data,outputFilePath,projectName);
-//		util.outputSelectedAttributes(data, outputFilePath, projectName);
+//		util.outputCoefficient(data,filepath,project);
+//		util.outputSelectedAttributes(data, filepath, project);
 		Classification classification = new Classification();
-//		classification.getSpecificClassficationResult(data,outputFilePath,projectName,deletemethod);
-		Evaluation eval = classification.StartClassification(data);
-		util.saveClassificationResult(eval,filepath,type,seperator,project,history,deletemethod);
+		classification.getSpecificClassficationResult(data,filepath,project,deletemethod);
+//		Evaluation eval = classification.StartClassification(data);
+//		util.saveClassificationResult(eval,filepath,type,seperator,project,history,deletemethod);
 	}
 		
 }
