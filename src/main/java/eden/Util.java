@@ -2,10 +2,6 @@ package main.java.eden;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-
-import weka.classifiers.Evaluation;
 import weka.core.Instances;
 
 
@@ -23,27 +19,9 @@ public class Util {
 		appendResult(attr,outputFilePath+"AttributeSelection/sel_attr.txt");
 	}
 
-	public void saveClassificationResult(Evaluation eval,String outputFilePath,String type, int seperator,String projectName,
-			String history,String deletemethod) throws IOException {
-		String predictResult = "";
-		if(projectName.equals("ant")){
-			predictResult = "\nJ48-"+deletemethod+"-" +history+"\n";
-		}
-		
-		DecimalFormat format = (DecimalFormat) NumberFormat.getInstance();
-		format.applyPattern("0.0000");
-		predictResult += projectName +", "+format.format(eval.pctCorrect())+", "
-				+ format.format(eval.areaUnderROC(0))+", "
-				+ format.format(eval.truePositiveRate(0))+", "
-				+ format.format(eval.truePositiveRate(1))+"\n";
-		String outputFile = outputFilePath+"Classification/"+type+"_"+String.valueOf(seperator)+".txt";
-		appendResult(predictResult,outputFile);
-		
-	}
-
 	public void outputCoefficient(Instances data, String outputFilePath, String projectName)
 			throws Exception {
-		String corrResult = "";
+		String corrResult = "attr,corr,pvalue\n";
 		KendallCorrelate kendall = new KendallCorrelate(data, outputFilePath);
 		kendall.calculateCoefficientWithClass(data);
 		String []attrName = kendall.getAttributeName();
@@ -54,7 +32,7 @@ public class Util {
 			corrResult += attrName[i]+","+String.valueOf(corrs[i])+","+pvalue[i]+"\n";
 		}
 		Util util = new Util();
-		util.saveResult(corrResult,outputFilePath+"Correlation/"+projectName+".txt");
+		util.saveResult(corrResult,outputFilePath+"Correlation/"+projectName+".csv");
 	}
 	
 	public void saveResult(String result, String file) throws IOException{
@@ -71,5 +49,12 @@ public class Util {
 		ba.write(result);
 		ba.flush();
 		ba.close();
+	}
+	
+	public void saveArffFile(Instances data,String filepath, String history,
+			String project, String type, String deletemethod) throws IOException {
+		
+		String outputfile = filepath+history+"/"+project+"_"+type+".arff";
+		saveResult(data.toString(), outputfile);
 	}
 }

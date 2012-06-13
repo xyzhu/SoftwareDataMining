@@ -74,19 +74,19 @@ public class DataReorganize {
 		data.setClassIndex(num_attributes);
 	}
 
-	public void deleteAttribute(String method) throws Exception {
+	public void deleteAttributeTypes(String method) throws Exception {
 		if(method.contains("understand")){
-			for(int i=77;i>=41;i--){
+			for(int i=48;i>=39;i--){
 				data.deleteAttributeAt(i);
 			}
 		}
 		if(method.contains("statement")){
-			for(int i=43;i>=17;i--){
+			for(int i=38;i>=15;i--){
 				data.deleteAttributeAt(i);
 			}
 		}
 		if(method.contains("rank")){
-			for(int i=16;i>=7;i--){
+			for(int i=14;i>=7;i--){
 				data.deleteAttributeAt(i);
 			}
 		}
@@ -101,14 +101,14 @@ public class DataReorganize {
 			attributeSelectCFS();
 		}
 		if(method.contains("wrapper best first")){
-			attributeSelectWrapper();
+//			attributeSelectWrapper();
 		}		
 	}
 
-	private void attributeSelectWrapper() throws Exception {
+/*	private void attributeSelectWrapper() throws Exception {
 		AttributeSelection fs = new AttributeSelection();
 		WrapperSubsetEval evaluator = new WrapperSubsetEval();
-		evaluator.setEvaluationMeasure(new SelectedTag(4,WrapperSubsetEval.TAGS_EVALUATION));
+		evaluator.setEvaluationMeasure(new SelectedTag(5,WrapperSubsetEval.TAGS_EVALUATION));
 		evaluator.setClassifier(new J48());
 		fs.setEvaluator(evaluator);
 		BestFirst search = new BestFirst();
@@ -116,7 +116,7 @@ public class DataReorganize {
 		fs.setSeed(2);
 		fs.SelectAttributes(data);
 		data = fs.reduceDimensionality(data);
-	}
+	}*/
 
 	private void attributeSelectCFS() throws Exception {
 		AttributeSelection fs = new AttributeSelection();
@@ -131,35 +131,27 @@ public class DataReorganize {
 
 	private void deleteHighRelated(String rfilePath) throws Exception {
 		KendallCorrelate kendall = new KendallCorrelate(data, rfilePath);
-		kendall.calculateCoefficientWithTLOC(data);
+		int tlocIndex = kendall.calculateCoefficientWithTLOC(data);
 		double []corrs = kendall.getCoefficient();
 		int m_attr = corrs.length;
 		for(int i=m_attr-1;i>=0;i--){
-			if(corrs[i]>0.9){
+			if(corrs[i]>0.9 && i!=tlocIndex){
 				data.deleteAttributeAt(i);
 			}
 		}
 	}
 
-	public Instances generateArffFile(String filepath, String history,
+	public Instances deleteAttributes(String filepath, String history,
 			String project, String type, Integer seperator, String deletemethod) throws Exception {
 		String inputfile = filepath+history+"/"+project+"_"+type+".csv";
 		data = readCsvFile(inputfile);
 		resetClassValue(seperator);
-		deleteAttribute(deletemethod);
-		if(!deletemethod.contains("understand")){
+		deleteAttributeTypes(deletemethod);
+		if(deletemethod.contains("high-related")&&!deletemethod.contains("understand")){
 			deleteHighRelated(filepath);
 		}
 		selectAttribute(deletemethod);
-		Util util = new Util();
-		if(deletemethod.equals("high-related")){
-			String outputfile = filepath+history+"/"+project+"_"+type+".arff";
-			util.saveResult(data.toString(), outputfile);
-		}
-		//		String outputfile = filepath+history+"/"+project+"_"+type+".arff";
-		//		util.saveResult(data.toString(), outputfile);
 		return data;
-
 	}
 
 	private Instances readCsvFile(String inputfile) throws IOException {

@@ -6,24 +6,15 @@ import java.util.Random;
 
 import weka.classifiers.Evaluation;
 import weka.classifiers.meta.Bagging;
+import weka.classifiers.mine.ACWV;
 import weka.classifiers.trees.J48;
 import weka.core.FastVector;
 import weka.core.Instances;
 
 public class Classification {
 
-	public Evaluation StartClassification(Instances data) throws Exception {
-		int randomSeed = 0;
-		Bagging classifier = new Bagging();
-		classifier.setClassifier(new J48());
-		Evaluation evaluation = new Evaluation(data);
-		Random rand = new Random(randomSeed);
-	
-		evaluation.crossValidateModel(classifier, data, 10, rand);
-		return evaluation;
-		
-		}
-	
+	Util util = new Util();
+
 	public void getSpecificClassficationResult(Instances data,String outputFilePath,
 			String projectName,String deletemethod) throws Exception{
 		int pass = 10;
@@ -64,7 +55,6 @@ public class Classification {
 		else if(deletemethod.contains("oldchange,understand")){
 			attrSet = "4";
 ;		}
-		Util util = new Util();
 		util.saveResult(str_result, outputFilePath+"AttributeValidation/"+projectName+attrSet+".csv");
 	}
 	public String doubleformat(double d){
@@ -72,5 +62,31 @@ public class Classification {
 		format.applyPattern("0.00");
 		String s = String.valueOf(format.format(d));
 		return s;
+	}
+
+	public void getClassificationResult(Instances data, String filepath,
+			String type, Integer seperator, String project, String history,
+			String deletemethod) throws Exception {
+		int randomSeed = 0;
+		Bagging classifier = new Bagging();
+		classifier.setClassifier(new ACWV());
+		Evaluation evaluation = new Evaluation(data);
+		Random rand = new Random(randomSeed);	
+		evaluation.crossValidateModel(classifier, data, 10, rand);
+		
+		String predictResult = "";
+		if(project.equals("ant")){
+			predictResult = "\nJ48-"+deletemethod+"-" +history+"\n";
+		}
+		
+		DecimalFormat format = (DecimalFormat) NumberFormat.getInstance();
+		format.applyPattern("0.0000");
+		predictResult += project +", "+format.format(evaluation.pctCorrect())+", "
+				+ format.format(evaluation.areaUnderROC(0))+", "
+				+ format.format(evaluation.truePositiveRate(0))+", "
+				+ format.format(evaluation.truePositiveRate(1))+"\n";
+		String outputFile = filepath+"Classification/"+type+"_"+String.valueOf(seperator)+".txt";
+		util.appendResult(predictResult,outputFile);
+		
 	}
 }

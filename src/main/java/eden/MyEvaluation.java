@@ -5,7 +5,7 @@ import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.evaluation.NominalPrediction;
 import weka.classifiers.evaluation.ThresholdCurve;
-import weka.classifiers.evaluation.output.prediction.AbstractOutput;
+//import weka.classifiers.evaluation.output.prediction.AbstractOutput;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -32,13 +32,13 @@ public class MyEvaluation extends Evaluation{
 
 		// We assume that the first element is a 
 		// weka.classifiers.evaluation.output.prediction.AbstractOutput object
-		AbstractOutput classificationOutput = null;
+/*		AbstractOutput classificationOutput = null;
 		if (forPredictionsPrinting.length > 0) {
 			// print the header first
 			classificationOutput = (AbstractOutput) forPredictionsPrinting[0];
 			classificationOutput.setHeader(data);
 			classificationOutput.printHeader();
-		}
+		}*/
 		
 		int num_inst = 0;
 		double num_correct = 0;
@@ -58,7 +58,8 @@ public class MyEvaluation extends Evaluation{
 			Classifier copiedClassifier = Classifier.makeCopy(classifier);
 			copiedClassifier.buildClassifier(train);
 			Instances test = data.testCV(numFolds, i);
-			evaluateModel(copiedClassifier, test, forPredictionsPrinting);
+			//evaluateModel(copiedClassifier, test, forPredictionsPrinting);
+			evaluateModel(copiedClassifier, test);
 			predictions = predictions();
 			num_inst = test.numInstances();
 			cr = new ClassificationResult();
@@ -98,8 +99,8 @@ public class MyEvaluation extends Evaluation{
 		}
 		m_NumFolds = numFolds;
 
-		if (classificationOutput != null)
-			classificationOutput.printFooter();
+/*		if (classificationOutput != null)
+			classificationOutput.printFooter();*/
 
 	}
 

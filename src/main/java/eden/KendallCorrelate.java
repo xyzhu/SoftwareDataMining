@@ -43,7 +43,7 @@ public class KendallCorrelate{
 		}	
 	}
 	
-	public void calculateCoefficientWithTLOC(Instances data) throws Exception{
+	public int calculateCoefficientWithTLOC(Instances data) throws Exception{
 		int tlocIndex = -1;
 		for(int i=0;i<num_attribute;i++){
 			if(data.attribute(i).name().equals("CountLine")){
@@ -59,6 +59,7 @@ public class KendallCorrelate{
 			corr = correlate(x,y);
 			coefficient[i] = corr[0];		
 		}
+		return tlocIndex;
 	}
   
   public double[] correlate (double[] x, double[] y) throws Exception {

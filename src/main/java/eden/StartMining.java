@@ -2,6 +2,8 @@ package main.java.eden;
 
 import weka.classifiers.Evaluation;
 import weka.core.Instances;
+import weka.filters.Filter;
+import weka.filters.supervised.attribute.Discretize;
 
 public class StartMining {
 
@@ -33,15 +35,17 @@ public class StartMining {
 		
 		DataReorganize organizer = new DataReorganize();
 		Instances data = null;
-		data = organizer.generateArffFile(filepath, history, project, type, seperator,deletemethod);
-		
-		Util util = new Util();
+		data = organizer.deleteAttributes(filepath, history, project, type, seperator,deletemethod);
+		Filter filter = new Discretize();
+		filter.setInputFormat(data);
+		data = Filter.useFilter(data, filter);
+//		Util util = new Util();
+//		util.saveArffFile(data, filepath, history, project, type, deletemethod);
 //		util.outputCoefficient(data,filepath,project);
 //		util.outputSelectedAttributes(data, filepath, project);
 		Classification classification = new Classification();
-		classification.getSpecificClassficationResult(data,filepath,project,deletemethod);
-//		Evaluation eval = classification.StartClassification(data);
-//		util.saveClassificationResult(eval,filepath,type,seperator,project,history,deletemethod);
+//		classification.getSpecificClassficationResult(data,filepath,project,deletemethod);
+		classification.getClassificationResult(data,filepath,type,seperator,project,history,deletemethod);
 	}
 		
 }
